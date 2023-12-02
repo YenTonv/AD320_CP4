@@ -150,6 +150,25 @@ app.get('/movies', (req, res) => {
 });
 
 /**
+ * POST endpoint for adding a new movie.
+ * This endpoint expects a request body with a movie object containing title, genre, and year.
+ * If any of these fields are missing, it sends a 400 status code.
+ * On successful addition of the movie, it sends a 201 status code.
+ * 
+ * @param {Object} req - Express request object containing the movie data in the body.
+ * @param {Object} res - Express response object used for sending responses.
+ */
+app.post('/addMovie', express.json(), (req, res) => {
+    const newMovie = req.body;
+    if (newMovie.title && newMovie.genre && newMovie.year) {
+        movies.push(newMovie);
+        res.status(201).send('Movie added successfully');
+    } else {
+        res.status(400).send('Invalid movie data');
+    }
+});
+
+/**
  * GET endpoint for basic information about the service.
  * @param {Object} req - doesn't expect any parameter
  * @param {Object} res - instructional text
@@ -158,6 +177,7 @@ app.get('/info', (req, res) => {
     res.type('text/plain');
     res.send('Welcome to the Movie Recommendation Service. Choose a genre to get started!');
 });
+
 
 /**
  * Default route handler for invalid requests.
