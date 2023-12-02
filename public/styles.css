@@ -1,0 +1,67 @@
+/*
+  Name: Yen Ton
+  Date: December 1, 2023
+  This is the styles.css page for the movie recommendation project.
+*/
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+    color: #333;
+}
+
+header {
+    background-color: #8B0000;
+    color: white;
+    text-align: center;
+    padding: 10px 0;
+}
+
+main {
+    padding: 20px;
+}
+
+label, select, button {
+    font-size: 16px;
+    margin: 5px;
+}
+
+button {
+    background-color: #8B0000;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+button:hover {
+    background-color: #600000;
+}
+
+#movieList {
+    list-style-type: none;
+    padding: 0;
+}
+
+#movieList li {
+    background-color: white;
+    border: 1px solid #ddd;
+    margin-top: 5px;
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.director-info {
+    border: 1px solid #ddd;
+    padding: 5px;
+    margin-top: 5px;
+    font-size: 0.8em;
+    background-color: #f9f9f9;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
