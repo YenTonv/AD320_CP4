@@ -8,16 +8,13 @@
 "use strict";
 
 /**
- * Initializes the genre loading and sets up event listeners when the document is ready.
+ * Initializes the application by loading genres and setting up event listeners when the document is ready.
  */
-document.addEventListener('DOMContentLoaded', (event) => {
+document.addEventListener('DOMContentLoaded', () => {
     loadGenres();
-    const recommendationsButton = document.getElementById('getRecommendations');
-    if (recommendationsButton) {
-        recommendationsButton.addEventListener('click', getMovies);
-    } else {
-        console.error('Button with ID `getRecommendations` not found.');
-    }
+    setupRecommendationsButton();
+    setupLoadMoviesButton();
+    setupAddMovieButton();
 });
 
 /**
@@ -26,13 +23,11 @@ document.addEventListener('DOMContentLoaded', (event) => {
 async function loadGenres() {
     try {
         const response = await fetch('/genres');
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
+        if (!response.ok) throw new Error('Network response was not ok');
         const genres = await response.json();
         populateGenresDropdown(genres);
     } catch (error) {
-        document.getElementById('error').textContent = 'Failed to load genres: ' + error.message;
+        displayError('Failed to load genres: ' + error.message);
     }
 }
 
@@ -51,27 +46,55 @@ function populateGenresDropdown(genres) {
 }
 
 /**
- * Fetches and displays movies based on the selected genre.
+ * Sets up the event listener for the recommendations button.
  */
-async function getMovies() {
-    const genreSelect = document.getElementById('genreSelect');
-    const selectedGenre = genreSelect.value;
-    try {
-        const response = await fetch(`/movies?genre=${encodeURIComponent(selectedGenre)}`);
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        const movies = await response.json();
-        displayMovies(movies);
-    } catch (error) {
-        document.getElementById('error').textContent = 'Failed to load movies: ' + error.message;
+function setupRecommendationsButton() {
+    const recommendationsButton = document.getElementById('getRecommendations');
+    if (recommendationsButton) {
+        recommendationsButton.addEventListener('click', getMovies);
+    } else {
+        console.error('Button with ID `getRecommendations` not found.');
     }
 }
 
 /**
- * Displays the list of movies in the DOM, including director details.
- * Each movie is listed with its title and year, followed by a smaller box containing the director's name, age, and awards.
- * If the director information is not available, a default message is displayed.
+ * Sets up the event listener for the load movies button.
+ */
+function setupLoadMoviesButton() {
+    document.getElementById('loadMovies').addEventListener('click', fetchMovies);
+}
+
+/**
+ * Fetches movies from the server and displays them.
+ */
+async function fetchMovies() {
+    try {
+        const response = await fetch('/movies');
+        await statusCheck(response);
+        const movies = await response.json();
+        displayMovies(movies);
+    } catch (error) {
+        handleError(error);
+    }
+}
+
+/**
+ * Fetches and displays movies based on the selected genre.
+ */
+async function getMovies() {
+    const selectedGenre = document.getElementById('genreSelect').value;
+    try {
+        const response = await fetch(`/movies?genre=${encodeURIComponent(selectedGenre)}`);
+        if (!response.ok) throw new Error('Network response was not ok');
+        const movies = await response.json();
+        displayMovies(movies);
+    } catch (error) {
+        handleError(error);
+    }
+}
+
+/**
+ * Displays the list of movies in the DOM.
  * @param {Array<Object>} movies - An array of movie objects to display. Each movie object includes title, year, and director details.
  */
 function displayMovies(movies) {
@@ -80,17 +103,94 @@ function displayMovies(movies) {
         console.error('Element with ID `movieList` not found.');
         return;
     }
-    moviesList.innerHTML = ''; // Clear existing movies
+    moviesList.innerHTML = '';
     movies.forEach(movie => {
-        const listItem = document.createElement('li');
-        listItem.textContent = `${movie.title} (${movie.year})`;
-
-        const directorBox = document.createElement('div');
-        directorBox.className = 'director-info';
-        const directorInfo = movie.director ? `Director: ${movie.director.name}, Age: ${movie.director.age}, Awards: ${movie.director.awards.join(', ')}` : 'Director information not available';
-        directorBox.textContent = directorInfo;
-
-        listItem.appendChild(directorBox);
+        const listItem = createMovieListItem(movie);
         moviesList.appendChild(listItem);
     });
+}
+
+/**
+ * Creates a list item for a movie.
+ * @param {Object} movie - A movie object containing title, year, and director details.
+ * @return {HTMLElement} The created list item element.
+ */
+function createMovieListItem(movie) {
+    const listItem = document.createElement('li');
+    listItem.textContent = `${movie.title} (${movie.year})`;
+
+    const directorBox = document.createElement('div');
+    directorBox.className = 'director-info';
+    directorBox.textContent = movie.director ? formatDirectorInfo(movie.director) : 'Director information not available';
+    
+    listItem.appendChild(directorBox);
+    return listItem;
+}
+
+/**
+ * Formats the director information for display.
+ * @param {Object} director - The director object containing name, age, and awards.
+ * @return {string} The formatted director information.
+ */
+function formatDirectorInfo(director) {
+    return `Director: ${director.name}, Age: ${director.age}, Awards: ${director.awards.join(', ')}`;
+}
+
+/**
+ * Checks the status of a network response.
+ * @param {Response} response - The response to check.
+ * @throws {Error} Throws an error if the response is not OK.
+ */
+function statusCheck(response) {
+    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+    return response;
+}
+
+/**
+ * Handles errors by displaying them in the error container.
+ * @param {Error} error - The error to handle.
+ */
+function handleError(error) {
+    displayError(`Failed to load movies: ${error.message}`);
+}
+
+/**
+ * Displays an error message in the error container.
+ * @param {string} message - The error message to display.
+ */
+function displayError(message) {
+    document.getElementById('errorContainer').textContent = message;
+}
+
+/**
+ * Sets up the event listener for the add movie button.
+ */
+function setupAddMovieButton() {
+    document.getElementById('addMovieButton').addEventListener('click', () => {
+        const movieData = {
+            title: document.getElementById('movieTitle').value,
+            genre: document.getElementById('movieGenre').value,
+            year: document.getElementById('movieYear').value
+        };
+        addMovie(movieData);
+    });
+}
+
+/**
+ * Adds a movie to the server.
+ * @param {Object} movieData - The data of the movie to add.
+ */
+async function addMovie(movieData) {
+    try {
+        const response = await fetch('/addMovie', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(movieData)
+        });
+
+        const result = await response.text();
+        document.getElementById('addMovieResult').textContent = result;
+    } catch (error) {
+        document.getElementById('addMovieResult').textContent = `Error: ${error.message}`;
+    }
 }

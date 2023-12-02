@@ -47,6 +47,32 @@ This API provides endpoints for fetching movie genres and movies based on select
 **Error Handling:**
   - If the `genre` query parameter is specified but no movies are found for that genre, a 404 error is returned with the message: "No movies found for genre: {genre}".
 
+## Add a New Movie
+**Request Format:** `/addMovie`
+
+**Request Type:** POST
+
+**Returned Data Format**: JSON
+
+**Displayed response Format**: Plain text: "Movie added successfully"
+
+**Description:** This endpoint is used to add a new movie to the movie list. It accepts a JSON payload containing the movie's details including title, genre, and year.
+
+**Example Request:** `/addMovie`
+body:
+{
+    "title": "Inception",
+    "genre": "Action",
+    "year": 2010
+}
+
+**Example Response:**
+Movie added successfully
+
+
+**Error Handling:**
+- If the request body does not contain a title, genre, or year, the server responds with a 400 status code and the message: Invalid movie data.
+
 ## Get instruction about the page
 **Request Format:** `/info`
 
@@ -64,7 +90,6 @@ Welcome to the Movie Recommendation Service. Choose a genre to get started!
 
 **Error Handling:**
 - N/A
-
 
 ## General Error Handling for Undefined Routes
 
